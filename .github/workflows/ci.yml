@@ -1,0 +1,17 @@
+name: Merhaba Dünya CI
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Elle tetikleme desteği
+
+jobs:
+  merhaba-dunya:
+    runs-on: ubuntu-latest
+
+    container:
+      image: debian:latest  # Docker'da debian imajı kullanılacak
+
+    steps:
+      - name: Merhaba Dünya yazdır
+        run: echo "Merhaba Dünya"
