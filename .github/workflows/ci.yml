@@ -7,7 +7,7 @@ on:
 
 jobs:
   merhaba-dunya:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     container:
       image: debian:latest  # Docker'da debian imajı kullanılacak
