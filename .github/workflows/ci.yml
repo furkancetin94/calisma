@@ -3,15 +3,33 @@ name: Merhaba Dünya CI
 on:
   push:
     branches: [ main ]
-  workflow_dispatch: # Elle tetikleme desteği
+  workflow_dispatch:  # Elle tetikleme desteği
 
 jobs:
-  merhaba-dunya:
+  self_hosted_job:
+    name: Merhaba Dünya (Self-hosted)
     runs-on: self-hosted
 
-    container:
-      image: debian:latest  # Docker'da debian imajı kullanılacak
+    steps:
+      - name: Dosya oluştur
+        run: echo "Bu dosya self-hosted runner tarafından oluşturuldu" > output.txt
+
+      - name: Artifakt olarak yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: mesaj-dosyasi
+          path: output.txt
+
+  github_hosted_job:
+    name: Dosyayı Kullan (GitHub Hosted)
+    runs-on: ubuntu-latest
+    needs: self_hosted_job
 
     steps:
-      - name: Merhaba Dünya yazdır
-        run: echo "Merhaba Dünya"
+      - name: Artifaktı indir
+        uses: actions/download-artifact@v4
+        with:
+          name: mesaj-dosyasi
+
+      - name: Dosya içeriğini oku
+        run: cat output.txt
