@@ -36,7 +36,7 @@ jobs:
       - name: Set ENVIRONMENT based on branch
         run: |
           if [[ "${GITHUB_REF##*/}" == "master" ]]; then
-            echo "ENVIRONMENT=production" >> $GITHUB_ENV
+            echo "ENVIRONMENT=Production" >> $GITHUB_ENV
           else
             echo "ENVIRONMENT=staging" >> $GITHUB_ENV
           fi
