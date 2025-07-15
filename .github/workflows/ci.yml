@@ -26,14 +26,22 @@ jobs:
     needs: github_hosted_job
     container:
       image: golang:1.24.5
-    environment: production
 
     env:
-      ENVIRONMENT: Production
       PROJECT_NAME: ${{ vars.PROJECT_NAME }}
       REPOSITORY_NAME: ${{ vars.REPOSITORY_NAME }}
       CUSTOM_TOKEN: ${{ secrets.CUSTOM_TOKEN }}
     steps:
+
+      - name: Set ENVIRONMENT based on branch
+        run: |
+          if [[ "${GITHUB_REF##*/}" == "master" ]]; then
+            echo "ENVIRONMENT=production" >> $GITHUB_ENV
+          else
+            echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+          fi
+
+
       - name: Checkout Repo
         uses: actions/checkout@v3
 
