@@ -37,6 +37,7 @@ jobs:
         run: |
           if [[ "${GITHUB_REF##*/}" == "master" ]]; then
             echo "ENVIRONMENT=Production" >> $GITHUB_ENV
+            echo $GITHUB_ENV
           else
             echo "ENVIRONMENT=staging" >> $GITHUB_ENV
           fi
