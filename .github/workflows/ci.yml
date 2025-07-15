@@ -2,7 +2,7 @@ name: Merhaba Dünya CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   workflow_dispatch:  # Elle tetikleme desteği
 
 jobs:
@@ -35,9 +35,9 @@ jobs:
 
       - name: Set ENVIRONMENT based on branch
         run: |
-          if [[ "${GITHUB_REF##*/}" == "master" ]]; then
+          BRANCH_NAME="${GITHUB_REF##*/}"
+          if [ "$BRANCH_NAME" = "master" ]; then
             echo "ENVIRONMENT=Production" >> $GITHUB_ENV
-            echo $GITHUB_ENV
           else
             echo "ENVIRONMENT=staging" >> $GITHUB_ENV
           fi
