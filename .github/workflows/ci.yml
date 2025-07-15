@@ -23,6 +23,7 @@ jobs:
   enocsi:
     name: Run Enocsi Container Analyzer
     runs-on: self-hosted
+    needs: github_hosted_job
     container:
       image: golang:1.24.5
     environment: production
