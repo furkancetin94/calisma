@@ -37,6 +37,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull test image
+        run: |
+          docker pull ghcr.io/furkancetin94/test-image:latest
+          docker images
         
       - name: Fetch Enocsi OIDC token
         id: enocsi-oidc
