@@ -20,51 +20,39 @@ jobs:
           name: mesaj-dosyasi
           path: output.txt
 
-  enocsi:
-    name: Run Enocsi Container Analyzer
-    runs-on: self-hosted
-    needs: github_hosted_job
-    container:
-      image: golang:1.24.5
-
-    env:
-      PROJECT_NAME: ${{ vars.PROJECT_NAME }}
-      REPOSITORY_NAME: ${{ vars.REPOSITORY_NAME }}
-      CUSTOM_TOKEN: ${{ secrets.CUSTOM_TOKEN }}
-    steps:
-
-      - name: Set ENVIRONMENT based on branch
-        run: |
-          BRANCH_NAME="${GITHUB_REF##*/}"
-          if [ "$BRANCH_NAME" = "master" ]; then
-            echo "ENVIRONMENT=Production" >> $GITHUB_ENV
-          else
-            echo "ENVIRONMENT=staging" >> $GITHUB_ENV
-          fi
-
-
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-
-      - name: Download Container Analyzer
-        run: |
-          wget -q https://github.com/enocsi/cli/releases/download/ForCli/container-analyzer
-          chmod +x container-analyzer
-
-      - name: Run Analyzer
-        run: |
-          ./container-analyzer -i "paketobuildpacks/build"
-
-  github_hosted_job:
-    name: Dosyayı Kullan (GitHub Hosted)
+  enocsi-scan:
+    name: Enocsi Security Scan
     runs-on: ubuntu-latest
-    needs: self_hosted_job
-
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
+      
     steps:
-      - name: Artifaktı indir
-        uses: actions/download-artifact@v4
-        with:
-          name: mesaj-dosyasi
+      - uses: actions/checkout@v4
 
-      - name: Dosya içeriğini oku
-        run: cat output.txt
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Fetch Enocsi OIDC token
+        id: enocsi-oidc
+        run: |
+          response=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=enocsi")
+          token=$(node -e "const fs=require('fs');process.stdout.write(JSON.parse(fs.readFileSync(0,'utf8')).value)" <<< "$response")
+          echo "::add-mask::$token"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+      - name: Enocsi Security Scan
+        env:
+          ENOCSI_CUSTOM_TOKEN: ${{ steps.enocsi-oidc.outputs.token }}
+          ENOCSI_PROJECT_NAME: "oxagin"
+          ENOCSI_REPOSITORY_NAME: "calisma"
+          ENOCSI_ENVIRONMENT: "Production"
+          ENOCSI_API_URL: "https://api.enocsi.com"
+        run: |
+          wget -q https://github.com/enocsi/cli/releases/latest/download/container-analyzer-linux-amd64 -O container-analyzer
+          chmod +x container-analyzer
+          ./container-analyzer -i ghcr.io/furkancetin94/test-image:latest
